@@ -18,7 +18,6 @@ public class MoviesStore {
         movie.setId(newId);
         movie.setTitle(title);
         movie.setYear(year);
-
         store.put(newId, movie);
 
         return newId;

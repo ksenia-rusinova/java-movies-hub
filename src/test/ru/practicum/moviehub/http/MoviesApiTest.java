@@ -82,7 +82,7 @@ public class MoviesApiTest {
         HttpResponse<String> resp =
                 client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
-        assertEquals(201, resp.statusCode(), "POST /movies должен вернуть 201");
+        assertEquals(201, resp.statusCode());
 
         String contentTypeHeaderValue =
                 resp.headers().firstValue("Content-Type").orElse("");
@@ -92,5 +92,169 @@ public class MoviesApiTest {
         assertNotNull(body.getId());
         assertEquals("Сумерки", body.getTitle());
         assertEquals(2008, body.getYear());
+    }
+
+    ///возвращает ошибку при пустом title
+    @Test
+    void postMovies_whenTitleEmpty_returnError() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setYear(2009);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(422, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("название не должно быть пустым", body.getDetails()[0]);
+    }
+
+    ///возвращает ошибку при слишком длинном title (> 100 символов)
+    @Test
+    void postMovies_whenTitleLongerThan100Characters_returnError() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setTitle("сумеркисумсумеркисумсумеркисумсумеркисумсумеркисумсумеркисумсумеркисумсумеркисумсумеркисумсумеркисуме");
+        request.setYear(2009);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(422, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("название не должно содержать более 100 символов", body.getDetails()[0]);
+    }
+
+    ///возвращает ошибку при неверном year (меньше 1888 или больше текущего года + 1)
+    @Test
+    void postMovies_whenYearLessThan1888_returnError() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setTitle("Сумерки");
+        request.setYear(1887);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(422, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("year должен быть в диапазоне от 1888 до текущего года + 1", body.getDetails()[0]);
+    }
+
+    @Test
+    void postMovies_whenYearMoreThanCurrentPlusOne_returnError() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setTitle("Сумерки");
+        request.setYear(2028);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(422, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("year должен быть в диапазоне от 1888 до текущего года + 1", body.getDetails()[0]);
+    }
+
+    ///возвращает ошибку при неправильном Content-Type
+    @Test
+    void postMovies_whenIncorrectContentType_returnError() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setTitle("Сумерки");
+        request.setYear(2008);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(415, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("некорректное значение заголовка Content-Type", body.getDetails()[0]);
+    }
+
+    ///возвращает ошибку при некорректном JSON
+    @Test
+    void postMovies_whenIncorrectJson_returnError() throws Exception {
+        Gson gson = new Gson();
+        String json = "\"title\":\"Сумерки\",\"year\":2008}";
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(422, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("JSON некорректен по синтаксису или его структура не подходит для Movie", body.getDetails()[0]);
     }
 }
