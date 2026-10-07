@@ -34,7 +34,7 @@ public class MoviesApiTest {
         server.stop();
     }
 
-    /*
+    /**
     GET /movies
     */
     ///возвращает пустой список, если нет фильмов
@@ -62,12 +62,12 @@ public class MoviesApiTest {
 
     ///возвращает список с ранее добавленными фильмами
 
-    /*
+    /**
     POST /movies
     */
     ///добавляет фильм при корректных данных
     @Test
-    void postMovies_successData() throws Exception {
+    void postMovies_addMovie_dataIsValid() throws Exception {
         Gson gson = new Gson();
         Movie request = new Movie();
         request.setTitle("Сумерки");
@@ -92,6 +92,61 @@ public class MoviesApiTest {
         assertNotNull(body.getId());
         assertEquals("Сумерки", body.getTitle());
         assertEquals(2008, body.getYear());
+    }
+
+    @Test
+    void postMovies_addSeveralMovies_dataIsValid() throws Exception {
+        Gson gson = new Gson();
+
+        //добавляем 1-й фильм
+        Movie request1 = new Movie();
+        request1.setTitle("Сумерки");
+        request1.setYear(2008);
+
+        HttpRequest req1 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request1), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp1 =
+                client.send(req1, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(201, resp1.statusCode());
+
+        String contentTypeHeaderValue =
+                resp1.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body1 = gson.fromJson(resp1.body().trim(), Movie.class);
+        assertNotNull(body1.getId());
+        assertEquals("Сумерки", body1.getTitle());
+        assertEquals(2008, body1.getYear());
+
+        //добавляем 2-й фильм
+        Movie request2 = new Movie();
+        request2.setTitle("Сумерки. Сага. Новолуние");
+        request2.setYear(2009);
+
+        HttpRequest req2 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request2), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp2 =
+                client.send(req2, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(201, resp2.statusCode());
+
+        String contentTypeHeaderValue2 =
+                resp2.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue2);
+
+        Movie body2 = gson.fromJson(resp2.body().trim(), Movie.class);
+        assertNotNull(body2.getId());
+        assertEquals("Сумерки. Сага. Новолуние", body2.getTitle());
+        assertEquals(2009, body2.getYear());
     }
 
     ///возвращает ошибку при пустом title
@@ -256,5 +311,103 @@ public class MoviesApiTest {
         Movie body = gson.fromJson(resp.body().trim(), Movie.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("JSON некорректен по синтаксису или его структура не подходит для Movie", body.getDetails()[0]);
+    }
+
+    /**
+     GET /movies/{id}
+    */
+    ///возвращает фильм по существующему id
+    @Test
+    void getMoviesId_returnMovieByExistingId() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setTitle("Сумерки");
+        request.setYear(2008);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        if(resp.statusCode() == 201){
+            Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+            Integer id = body.getId();
+
+            ///тест метода GET /movies/{id}
+            HttpRequest reqGetMoviesId = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE + "/movies/" + id))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> respGetMoviesId =
+                    client.send(reqGetMoviesId, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+            assertEquals(200, respGetMoviesId.statusCode());
+
+            String contentTypeHeaderValue =
+                    respGetMoviesId.headers().firstValue("Content-Type").orElse("");
+            assertEquals(CT_JSON, contentTypeHeaderValue);
+
+            Movie bodyGetMoviesId = gson.fromJson(respGetMoviesId.body().trim(), Movie.class);
+            assertEquals(id, bodyGetMoviesId.getId());
+            assertEquals("Сумерки", bodyGetMoviesId.getTitle());
+            assertEquals(2008, bodyGetMoviesId.getYear());
+        }
+    }
+
+    ///возвращает ошибку, если фильм не найден
+    @Test
+    void getMoviesId_movieNotFoundById_returnError() throws Exception {
+        Gson gson = new Gson();
+
+        Integer id = 20;
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/" + id))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(404, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("фильм по id = " + id + " не найден", body.getDetails()[0]);
+    }
+
+    ///возвращает ошибку, если id не число
+    @Test
+    void getMoviesId_idNotNumber_returnError() throws Exception {
+        Gson gson = new Gson();
+
+        String id = "id";
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/" + id))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(400, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("некорректный id = " + id + ", id должен состоять только из цифр", body.getDetails()[0]);
     }
 }

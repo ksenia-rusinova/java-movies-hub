@@ -14,13 +14,13 @@ public class MoviesStore {
     public static Integer addRecord(String title, Integer year) {
         Movie movie = new Movie();
 
-        Integer newId = nextId++;
-        movie.setId(newId);
+        nextId = nextId + 1;
+        movie.setId(nextId);
         movie.setTitle(title);
         movie.setYear(year);
-        store.put(newId, movie);
+        store.put(nextId, movie);
 
-        return newId;
+        return nextId;
     }
 
     public static List<Movie> getAll() {
