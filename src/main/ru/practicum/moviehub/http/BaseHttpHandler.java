@@ -78,7 +78,19 @@ public abstract class BaseHttpHandler implements HttpHandler {
         }
     }
 
-    protected void sendNoContent(HttpExchange ex) throws java.io.IOException {
+    protected void sendDeleteMoviesId(HttpExchange ex, String[] uri) throws IOException {
+        Gson gson = new Gson();
+
+        if(getListElementById(Integer.parseInt(uri[2])) != null){
+            deleteListElementById(Integer.parseInt(uri[2]));
+            sendNoContent(ex);
+        } else {
+            String[] details = {"фильм по id = " + uri[2] + " не удалось удалить, тк id не найден"};
+            sendJson(ex, 404, gson.toJson(getError("Ошибка валидации", details)));
+        }
+    }
+
+    protected void sendNoContent(HttpExchange ex) throws IOException {
         ex.getResponseHeaders().set("Content-Type", CT_JSON);
         ex.sendResponseHeaders(204, -1);
     }

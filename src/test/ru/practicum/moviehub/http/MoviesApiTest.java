@@ -410,4 +410,101 @@ public class MoviesApiTest {
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("некорректный id = " + id + ", id должен состоять только из цифр", body.getDetails()[0]);
     }
+
+    /**
+    DELETE /movies/{id}
+    */
+    ///удаляет фильм по существующему id
+    @Test
+    void deleteMoviesId_deleteMovieByExistingId() throws Exception {
+        Gson gson = new Gson();
+        Movie request = new Movie();
+        request.setTitle("Сумерки");
+        request.setYear(2008);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        if(resp.statusCode() == 201){
+            Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+            Integer id = body.getId();
+
+            ///тест метода DELETE /movies/{id}
+            HttpRequest reqDeleteMoviesId = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE + "/movies/" + id))
+                    .DELETE()
+                    .build();
+
+            HttpResponse<String> respDeleteMoviesId =
+                    client.send(reqDeleteMoviesId, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+            assertEquals(204, respDeleteMoviesId.statusCode());
+
+            String contentTypeHeaderValue =
+                    respDeleteMoviesId.headers().firstValue("Content-Type").orElse("");
+            assertEquals(CT_JSON, contentTypeHeaderValue);
+
+            String bodyDeleteMoviesId = respDeleteMoviesId.body().trim();
+            assertTrue(bodyDeleteMoviesId.isEmpty());
+        }
+    }
+
+    ///возвращает ошибку, если фильм не найден
+    @Test
+    void deleteMoviesId_movieNotFoundById_returnError() throws Exception {
+        Gson gson = new Gson();
+
+        Integer id = 20;
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/" + id))
+                .DELETE()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(404, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("фильм по id = " + id + " не удалось удалить, тк id не найден", body.getDetails()[0]);
+    }
+
+    ///возвращает ошибку, если id не число
+    @Test
+    void deleteMoviesId_idNotNumber_returnError() throws Exception {
+        Gson gson = new Gson();
+
+        String id = "id";
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies/" + id))
+                .DELETE()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(400, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("некорректный id = " + id + ", id должен состоять только из цифр", body.getDetails()[0]);
+    }
+
 }

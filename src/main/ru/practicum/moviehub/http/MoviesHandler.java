@@ -14,10 +14,11 @@ public class MoviesHandler extends BaseHttpHandler {
     @Override
     public void handle(HttpExchange ex) throws IOException {
         String method = ex.getRequestMethod();
-        if (method.equalsIgnoreCase("GET")) {
 
-            URI requestURI = ex.getRequestURI();
-            String[] splitStrings = requestURI.getPath().split("/");
+        URI requestURI = ex.getRequestURI();
+        String[] splitStrings = requestURI.getPath().split("/");
+
+        if (method.equalsIgnoreCase("GET")) {
 
             if(splitStrings.length == 3){
                 try {
@@ -36,6 +37,18 @@ public class MoviesHandler extends BaseHttpHandler {
 
         } else if (method.equalsIgnoreCase("POST")) {
             sendPostMovies(ex);
+        } else if(method.equalsIgnoreCase("DELETE")) {
+
+            try {
+                Integer.parseInt(splitStrings[2].trim());
+                sendDeleteMoviesId(ex, splitStrings);
+            } catch (NumberFormatException e) {
+                Gson gson = new Gson();
+
+                String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
+                sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
+            }
+
         }
     }
 }

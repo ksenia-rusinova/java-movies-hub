@@ -30,4 +30,8 @@ public class MoviesStore {
     public static Movie getListElementById(Integer id) {
         return store.get(id);
     }
+
+    public static void deleteListElementById(Integer id) {
+        store.remove(id);
+    }
 }
