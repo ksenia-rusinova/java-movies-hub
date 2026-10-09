@@ -8,6 +8,7 @@ import java.net.URI;
 
 import static ru.practicum.moviehub.api.ErrorResponse.getError;
 import static ru.practicum.moviehub.store.MoviesStore.getAll;
+import static ru.practicum.moviehub.store.MoviesStore.getMovieFromListByYear;
 
 public class MoviesHandler extends BaseHttpHandler {
 
@@ -21,24 +22,29 @@ public class MoviesHandler extends BaseHttpHandler {
         if (method.equalsIgnoreCase("GET")) {
             Gson gson = new Gson();
 
-            if(splitStrings.length == 3){
+            if (splitStrings.length == 3) {
                 try {
                     Integer.parseInt(splitStrings[2].trim());
                     sendGetMoviesId(ex, splitStrings);
                 } catch (NumberFormatException e) {
-
                     String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
                     sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
                 }
-
+            } else if (!requestURI.getQuery().isEmpty()) {
+                String year = requestURI.getQuery().split("=")[1];
+                try {
+                    Integer.parseInt(year.trim());
+                    sendJson(ex, 200, gson.toJson(getMovieFromListByYear(Integer.parseInt(year.trim()))));
+                } catch (NumberFormatException e) {
+                    String[] details = {"некорректный параметр запроса — 'year', year = " + year};
+                    sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
+                }
             } else {
                 sendJson(ex, 200, gson.toJson(getAll()));
             }
-
         } else if (method.equalsIgnoreCase("POST")) {
             sendPostMovies(ex);
-        } else if(method.equalsIgnoreCase("DELETE")) {
-
+        } else if (method.equalsIgnoreCase("DELETE")) {
             try {
                 Integer.parseInt(splitStrings[2].trim());
                 sendDeleteMoviesId(ex, splitStrings);
@@ -48,7 +54,8 @@ public class MoviesHandler extends BaseHttpHandler {
                 String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
                 sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
             }
-
+        } else {
+            sendNoContent(ex, 405);
         }
     }
 }

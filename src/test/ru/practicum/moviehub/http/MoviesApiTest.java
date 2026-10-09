@@ -36,8 +36,8 @@ public class MoviesApiTest {
     }
 
     /**
-    GET /movies
-    */
+     * GET /movies
+     */
     ///возвращает пустой список, если нет фильмов
     @Test
     void getMovies_whenEmpty_returnEmptyArray() throws Exception {
@@ -61,7 +61,7 @@ public class MoviesApiTest {
                 "Ожидается JSON-массив");
     }
 
-    ///возвращает список с ранее добавленными фильмами
+    /// возвращает список с ранее добавленными фильмами
     @Test
     void getMovies_whenListNotEmpty_returnList() throws Exception {
         Gson gson = new Gson();
@@ -119,8 +119,8 @@ public class MoviesApiTest {
     }
 
     /**
-    POST /movies
-    */
+     * POST /movies
+     */
     ///добавляет фильм при корректных данных
     @Test
     void postMovies_addMovie_dataIsValid() throws Exception {
@@ -205,7 +205,7 @@ public class MoviesApiTest {
         assertEquals(2009, body2.getYear());
     }
 
-    ///возвращает ошибку при пустом title
+    /// возвращает ошибку при пустом title
     @Test
     void postMovies_whenTitleEmpty_returnError() throws Exception {
         Gson gson = new Gson();
@@ -232,7 +232,7 @@ public class MoviesApiTest {
         assertEquals("название не должно быть пустым", body.getDetails()[0]);
     }
 
-    ///возвращает ошибку при слишком длинном title (> 100 символов)
+    /// возвращает ошибку при слишком длинном title (> 100 символов)
     @Test
     void postMovies_whenTitleLongerThan100Characters_returnError() throws Exception {
         Gson gson = new Gson();
@@ -260,7 +260,7 @@ public class MoviesApiTest {
         assertEquals("название не должно содержать более 100 символов", body.getDetails()[0]);
     }
 
-    ///возвращает ошибку при неверном year (меньше 1888 или больше текущего года + 1)
+    /// возвращает ошибку при неверном year (меньше 1888 или больше текущего года + 1)
     @Test
     void postMovies_whenYearLessThan1888_returnError() throws Exception {
         Gson gson = new Gson();
@@ -315,7 +315,7 @@ public class MoviesApiTest {
         assertEquals("year должен быть в диапазоне от 1888 до текущего года + 1", body.getDetails()[0]);
     }
 
-    ///возвращает ошибку при неправильном Content-Type
+    /// возвращает ошибку при неправильном Content-Type
     @Test
     void postMovies_whenIncorrectContentType_returnError() throws Exception {
         Gson gson = new Gson();
@@ -343,7 +343,7 @@ public class MoviesApiTest {
         assertEquals("некорректное значение заголовка Content-Type", body.getDetails()[0]);
     }
 
-    ///возвращает ошибку при некорректном JSON
+    /// возвращает ошибку при некорректном JSON
     @Test
     void postMovies_whenIncorrectJson_returnError() throws Exception {
         Gson gson = new Gson();
@@ -370,8 +370,8 @@ public class MoviesApiTest {
     }
 
     /**
-     GET /movies/{id}
-    */
+     * GET /movies/{id}
+     */
     ///возвращает фильм по существующему id
     @Test
     void getMoviesId_returnMovieByExistingId() throws Exception {
@@ -389,7 +389,7 @@ public class MoviesApiTest {
         HttpResponse<String> resp =
                 client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
-        if(resp.statusCode() == 201){
+        if (resp.statusCode() == 201) {
             Movie body = gson.fromJson(resp.body().trim(), Movie.class);
             Integer id = body.getId();
 
@@ -415,7 +415,7 @@ public class MoviesApiTest {
         }
     }
 
-    ///возвращает ошибку, если фильм не найден
+    /// возвращает ошибку, если фильм не найден
     @Test
     void getMoviesId_movieNotFoundById_returnError() throws Exception {
         Gson gson = new Gson();
@@ -441,7 +441,7 @@ public class MoviesApiTest {
         assertEquals("фильм по id = " + id + " не найден", body.getDetails()[0]);
     }
 
-    ///возвращает ошибку, если id не число
+    /// возвращает ошибку, если id не число
     @Test
     void getMoviesId_idNotNumber_returnError() throws Exception {
         Gson gson = new Gson();
@@ -468,8 +468,8 @@ public class MoviesApiTest {
     }
 
     /**
-    DELETE /movies/{id}
-    */
+     * DELETE /movies/{id}
+     */
     ///удаляет фильм по существующему id
     @Test
     void deleteMoviesId_deleteMovieByExistingId() throws Exception {
@@ -487,7 +487,7 @@ public class MoviesApiTest {
         HttpResponse<String> resp =
                 client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
-        if(resp.statusCode() == 201){
+        if (resp.statusCode() == 201) {
             Movie body = gson.fromJson(resp.body().trim(), Movie.class);
             Integer id = body.getId();
 
@@ -511,7 +511,7 @@ public class MoviesApiTest {
         }
     }
 
-    ///возвращает ошибку, если фильм не найден
+    /// возвращает ошибку, если фильм не найден
     @Test
     void deleteMoviesId_movieNotFoundById_returnError() throws Exception {
         Gson gson = new Gson();
@@ -537,7 +537,7 @@ public class MoviesApiTest {
         assertEquals("фильм по id = " + id + " не удалось удалить, тк id не найден", body.getDetails()[0]);
     }
 
-    ///возвращает ошибку, если id не число
+    /// возвращает ошибку, если id не число
     @Test
     void deleteMoviesId_idNotNumber_returnError() throws Exception {
         Gson gson = new Gson();
@@ -564,7 +564,7 @@ public class MoviesApiTest {
     }
 
     /**
-     GET /movies?year=YYYY
+     * GET /movies?year=YYYY
      */
     ///возвращает фильмы указанного года
     @Test
@@ -587,7 +587,7 @@ public class MoviesApiTest {
         //добавляем 2-й фильм
         Movie request2 = new Movie();
         request2.setTitle("Сумерки. Сага. Новолуние");
-        request2.setYear(2008);
+        request2.setYear(2009);
 
         HttpRequest req2 = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
@@ -598,9 +598,8 @@ public class MoviesApiTest {
         client.send(req2, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
 
         //тест метода GET /movies?year=YYYY
-        ///тут остановилась
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(BASE + "/movies?year=2008"))
                 .GET()
                 .build();
 
@@ -615,12 +614,82 @@ public class MoviesApiTest {
 
         List<Movie> body = gson.fromJson(resp.body().trim(), new ListOfMoviesTypeToken().getType());
 
+        assertEquals(1, body.size());
         assertEquals(1, body.get(0).getId());
         assertEquals("Сумерки", body.get(0).getTitle());
         assertEquals(2008, body.get(0).getYear());
+    }
 
-        assertEquals(2, body.get(1).getId());
-        assertEquals("Сумерки. Сага. Новолуние", body.get(1).getTitle());
-        assertEquals(2009, body.get(1).getYear());
+    /// возвращает пустой список, если фильмов с таким годом нет
+    @Test
+    void getMoviesYear_filmsNotFoundForYear_returnEmptyList() throws Exception {
+        Gson gson = new Gson();
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies?year=2008"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(200, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        List<Movie> body = gson.fromJson(resp.body().trim(), new ListOfMoviesTypeToken().getType());
+        assertEquals(0, body.size());
+    }
+
+    /// возвращает ошибку, если параметр year не число
+    @Test
+    void getMoviesYear_yearNotNumber_returnError() throws Exception {
+        Gson gson = new Gson();
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies?year=zero"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(400, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        assertEquals("Ошибка валидации", body.getError());
+        assertEquals("некорректный параметр запроса — 'year', year = zero", body.getDetails()[0]);
+    }
+
+    /// при неподдерживаемом HTTP-методе возвращается 405 Method Not Allowed
+    @Test
+    void putMovies() throws Exception {
+        Gson gson = new Gson();
+
+        Movie request = new Movie();
+        request.setTitle("Сумерки");
+        request.setYear(2008);
+
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .PUT(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(405, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        assertEquals("", resp.body().trim());
     }
 }

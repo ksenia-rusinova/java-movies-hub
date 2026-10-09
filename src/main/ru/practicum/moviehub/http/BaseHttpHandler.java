@@ -41,19 +41,19 @@ public abstract class BaseHttpHandler implements HttpHandler {
             Headers requestHeaders = ex.getRequestHeaders();
             List<String> contentTypeValues = requestHeaders.get("Content-type");
 
-            if(contentTypeValues.contains(CT_JSON)){
-                if((request.getTitle() != null && request.getYear() != null) &&
+            if (contentTypeValues.contains(CT_JSON)) {
+                if ((request.getTitle() != null && request.getYear() != null) &&
                         request.getTitle().length() < 100 &&
-                        (request.getYear() >= 1888 && request.getYear() <= (LocalDate.now().getYear() + 1))){
+                        (request.getYear() >= 1888 && request.getYear() <= (LocalDate.now().getYear() + 1))) {
                     Integer id = addRecord(request.getTitle(), request.getYear());
-                    sendJson(ex, 201, gson.toJson(getListElementById(id)));
-                } else if(request.getTitle() == null || request.getTitle().isEmpty()) {
+                    sendJson(ex, 201, gson.toJson(getMovieFromListById(id)));
+                } else if (request.getTitle() == null || request.getTitle().isEmpty()) {
                     String[] details = {"название не должно быть пустым"};
                     sendJson(ex, 422, gson.toJson(getError("Ошибка валидации", details)));
-                } else if(request.getTitle().length() > 100) {
+                } else if (request.getTitle().length() > 100) {
                     String[] details = {"название не должно содержать более 100 символов"};
                     sendJson(ex, 422, gson.toJson(getError("Ошибка валидации", details)));
-                } else if(request.getYear() < 1888 || request.getYear() > (LocalDate.now().getYear() + 1)) {
+                } else if (request.getYear() < 1888 || request.getYear() > (LocalDate.now().getYear() + 1)) {
                     String[] details = {"year должен быть в диапазоне от 1888 до текущего года + 1"};
                     sendJson(ex, 422, gson.toJson(getError("Ошибка валидации", details)));
                 }
@@ -70,8 +70,8 @@ public abstract class BaseHttpHandler implements HttpHandler {
     protected void sendGetMoviesId(HttpExchange ex, String[] uri) throws IOException {
         Gson gson = new Gson();
 
-        if(getListElementById(Integer.parseInt(uri[2])) != null){
-            sendJson(ex, 200, gson.toJson(getListElementById(Integer.parseInt(uri[2]))));
+        if (getMovieFromListById(Integer.parseInt(uri[2])) != null) {
+            sendJson(ex, 200, gson.toJson(getMovieFromListById(Integer.parseInt(uri[2]))));
         } else {
             String[] details = {"фильм по id = " + uri[2] + " не найден"};
             sendJson(ex, 404, gson.toJson(getError("Ошибка валидации", details)));
@@ -81,17 +81,17 @@ public abstract class BaseHttpHandler implements HttpHandler {
     protected void sendDeleteMoviesId(HttpExchange ex, String[] uri) throws IOException {
         Gson gson = new Gson();
 
-        if(getListElementById(Integer.parseInt(uri[2])) != null){
+        if (getMovieFromListById(Integer.parseInt(uri[2])) != null) {
             deleteListElementById(Integer.parseInt(uri[2]));
-            sendNoContent(ex);
+            sendNoContent(ex, 204);
         } else {
             String[] details = {"фильм по id = " + uri[2] + " не удалось удалить, тк id не найден"};
             sendJson(ex, 404, gson.toJson(getError("Ошибка валидации", details)));
         }
     }
 
-    protected void sendNoContent(HttpExchange ex) throws IOException {
+    protected void sendNoContent(HttpExchange ex, int status) throws IOException {
         ex.getResponseHeaders().set("Content-Type", CT_JSON);
-        ex.sendResponseHeaders(204, -1);
+        ex.sendResponseHeaders(status, -1);
     }
 }

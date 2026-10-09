@@ -2,10 +2,7 @@ package ru.practicum.moviehub.store;
 
 import ru.practicum.moviehub.model.Movie;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MoviesStore {
     private static Integer nextId = 0;
@@ -27,11 +24,16 @@ public class MoviesStore {
         return new ArrayList<>(store.values());
     }
 
-    public static Movie getListElementById(Integer id) {
+    public static Movie getMovieFromListById(Integer id) {
         return store.get(id);
     }
 
     public static void deleteListElementById(Integer id) {
         store.remove(id);
+    }
+
+    public static List<Movie> getMovieFromListByYear(Integer queryYear) {
+        return store.values().stream()
+                .filter(movie -> movie.getYear().equals(queryYear)).toList();
     }
 }
