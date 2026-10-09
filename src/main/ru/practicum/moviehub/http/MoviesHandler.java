@@ -22,6 +22,8 @@ public class MoviesHandler extends BaseHttpHandler {
         if (method.equalsIgnoreCase("GET")) {
             Gson gson = new Gson();
 
+            String query = requestURI.getQuery();
+
             if (splitStrings.length == 3) {
                 try {
                     Integer.parseInt(splitStrings[2].trim());
@@ -30,7 +32,7 @@ public class MoviesHandler extends BaseHttpHandler {
                     String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
                     sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
                 }
-            } else if (!requestURI.getQuery().isEmpty()) {
+            } else if (query != null && !query.isEmpty()) {
                 String year = requestURI.getQuery().split("=")[1];
                 try {
                     Integer.parseInt(year.trim());
