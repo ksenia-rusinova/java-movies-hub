@@ -10,6 +10,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static ru.practicum.moviehub.http.BaseHttpHandler.CT_JSON;
@@ -39,7 +40,7 @@ public class MoviesApiTest {
     */
     ///возвращает пустой список, если нет фильмов
     @Test
-    void getMovies_whenEmpty_returnsEmptyArray() throws Exception {
+    void getMovies_whenEmpty_returnEmptyArray() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(BASE + "/movies"))
                 .GET()
@@ -61,6 +62,61 @@ public class MoviesApiTest {
     }
 
     ///возвращает список с ранее добавленными фильмами
+    @Test
+    void getMovies_whenListNotEmpty_returnList() throws Exception {
+        Gson gson = new Gson();
+
+        //добавляем 1-й фильм
+        Movie request1 = new Movie();
+        request1.setTitle("Сумерки");
+        request1.setYear(2008);
+
+        HttpRequest req1 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request1), StandardCharsets.UTF_8))
+                .build();
+
+        client.send(req1, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        //добавляем 2-й фильм
+        Movie request2 = new Movie();
+        request2.setTitle("Сумерки. Сага. Новолуние");
+        request2.setYear(2009);
+
+        HttpRequest req2 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request2), StandardCharsets.UTF_8))
+                .build();
+
+        client.send(req2, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        //тест метода GET /movies
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(200, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        List<Movie> body = gson.fromJson(resp.body().trim(), new ListOfMoviesTypeToken().getType());
+
+        assertEquals(1, body.get(0).getId());
+        assertEquals("Сумерки", body.get(0).getTitle());
+        assertEquals(2008, body.get(0).getYear());
+
+        assertEquals(2, body.get(1).getId());
+        assertEquals("Сумерки. Сага. Новолуние", body.get(1).getTitle());
+        assertEquals(2009, body.get(1).getYear());
+    }
 
     /**
     POST /movies
@@ -507,4 +563,64 @@ public class MoviesApiTest {
         assertEquals("некорректный id = " + id + ", id должен состоять только из цифр", body.getDetails()[0]);
     }
 
+    /**
+     GET /movies?year=YYYY
+     */
+    ///возвращает фильмы указанного года
+    @Test
+    void getMoviesYear_returnListOfFilmsFromSelectedYear() throws Exception {
+        Gson gson = new Gson();
+
+        //добавляем 1-й фильм
+        Movie request1 = new Movie();
+        request1.setTitle("Сумерки");
+        request1.setYear(2008);
+
+        HttpRequest req1 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request1), StandardCharsets.UTF_8))
+                .build();
+
+        client.send(req1, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        //добавляем 2-й фильм
+        Movie request2 = new Movie();
+        request2.setTitle("Сумерки. Сага. Новолуние");
+        request2.setYear(2008);
+
+        HttpRequest req2 = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .header("Content-Type", CT_JSON)
+                .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request2), StandardCharsets.UTF_8))
+                .build();
+
+        client.send(req2, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        //тест метода GET /movies?year=YYYY
+        ///тут остановилась
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(BASE + "/movies"))
+                .GET()
+                .build();
+
+        HttpResponse<String> resp =
+                client.send(req, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+        assertEquals(200, resp.statusCode());
+
+        String contentTypeHeaderValue =
+                resp.headers().firstValue("Content-Type").orElse("");
+        assertEquals(CT_JSON, contentTypeHeaderValue);
+
+        List<Movie> body = gson.fromJson(resp.body().trim(), new ListOfMoviesTypeToken().getType());
+
+        assertEquals(1, body.get(0).getId());
+        assertEquals("Сумерки", body.get(0).getTitle());
+        assertEquals(2008, body.get(0).getYear());
+
+        assertEquals(2, body.get(1).getId());
+        assertEquals("Сумерки. Сага. Новолуние", body.get(1).getTitle());
+        assertEquals(2009, body.get(1).getYear());
+    }
 }

@@ -19,20 +19,20 @@ public class MoviesHandler extends BaseHttpHandler {
         String[] splitStrings = requestURI.getPath().split("/");
 
         if (method.equalsIgnoreCase("GET")) {
+            Gson gson = new Gson();
 
             if(splitStrings.length == 3){
                 try {
                     Integer.parseInt(splitStrings[2].trim());
                     sendGetMoviesId(ex, splitStrings);
                 } catch (NumberFormatException e) {
-                    Gson gson = new Gson();
 
                     String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
                     sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
                 }
 
             } else {
-                sendJson(ex, 200, getAll().toString());
+                sendJson(ex, 200, gson.toJson(getAll()));
             }
 
         } else if (method.equalsIgnoreCase("POST")) {
