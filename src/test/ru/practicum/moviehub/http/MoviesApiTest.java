@@ -18,7 +18,7 @@ import static ru.practicum.moviehub.http.BaseHttpHandler.CT_JSON;
 
 public class MoviesApiTest {
 
-    private final String BASE = "http://localhost:8080";
+    private final String baseUrl = "http://localhost:8080";
     private MoviesServer server;
     private HttpClient client;
 
@@ -43,7 +43,7 @@ public class MoviesApiTest {
     @Test
     void getMovies_whenEmpty_returnEmptyArray() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .GET()
                 .build();
 
@@ -73,7 +73,7 @@ public class MoviesApiTest {
         request1.setYear(2008);
 
         HttpRequest req1 = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request1), StandardCharsets.UTF_8))
                 .build();
@@ -86,7 +86,7 @@ public class MoviesApiTest {
         request2.setYear(2009);
 
         HttpRequest req2 = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request2), StandardCharsets.UTF_8))
                 .build();
@@ -95,7 +95,7 @@ public class MoviesApiTest {
 
         //тест метода GET /movies
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .GET()
                 .build();
 
@@ -131,7 +131,7 @@ public class MoviesApiTest {
         request.setYear(2008);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -161,7 +161,7 @@ public class MoviesApiTest {
         request1.setYear(2008);
 
         HttpRequest req1 = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request1), StandardCharsets.UTF_8))
                 .build();
@@ -186,7 +186,7 @@ public class MoviesApiTest {
         request2.setYear(2009);
 
         HttpRequest req2 = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request2), StandardCharsets.UTF_8))
                 .build();
@@ -214,7 +214,7 @@ public class MoviesApiTest {
         request.setYear(2009);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -242,7 +242,7 @@ public class MoviesApiTest {
         request.setYear(2009);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -270,7 +270,7 @@ public class MoviesApiTest {
         request.setYear(1887);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -297,7 +297,7 @@ public class MoviesApiTest {
         request.setYear(2028);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -325,7 +325,7 @@ public class MoviesApiTest {
         request.setYear(2008);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -351,7 +351,7 @@ public class MoviesApiTest {
         String json = "\"title\":\"Сумерки\",\"year\":2008}";
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
                 .build();
@@ -382,7 +382,7 @@ public class MoviesApiTest {
         request.setYear(2008);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -396,7 +396,7 @@ public class MoviesApiTest {
 
             ///тест метода GET /movies/{id}
             HttpRequest reqGetMoviesId = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE + "/movies/" + id))
+                    .uri(URI.create(baseUrl + "/movies/" + id))
                     .GET()
                     .build();
 
@@ -424,7 +424,7 @@ public class MoviesApiTest {
         Integer id = 20;
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies/" + id))
+                .uri(URI.create(baseUrl + "/movies/" + id))
                 .GET()
                 .build();
 
@@ -450,7 +450,7 @@ public class MoviesApiTest {
         String id = "id";
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies/" + id))
+                .uri(URI.create(baseUrl + "/movies/" + id))
                 .GET()
                 .build();
 
@@ -480,7 +480,7 @@ public class MoviesApiTest {
         request.setYear(2008);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
@@ -494,7 +494,7 @@ public class MoviesApiTest {
 
             ///тест метода DELETE /movies/{id}
             HttpRequest reqDeleteMoviesId = HttpRequest.newBuilder()
-                    .uri(URI.create(BASE + "/movies/" + id))
+                    .uri(URI.create(baseUrl + "/movies/" + id))
                     .DELETE()
                     .build();
 
@@ -520,7 +520,7 @@ public class MoviesApiTest {
         Integer id = 20;
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies/" + id))
+                .uri(URI.create(baseUrl + "/movies/" + id))
                 .DELETE()
                 .build();
 
@@ -546,7 +546,7 @@ public class MoviesApiTest {
         String id = "id";
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies/" + id))
+                .uri(URI.create(baseUrl + "/movies/" + id))
                 .DELETE()
                 .build();
 
@@ -578,7 +578,7 @@ public class MoviesApiTest {
         request1.setYear(2008);
 
         HttpRequest req1 = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request1), StandardCharsets.UTF_8))
                 .build();
@@ -591,7 +591,7 @@ public class MoviesApiTest {
         request2.setYear(2009);
 
         HttpRequest req2 = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .header("Content-Type", CT_JSON)
                 .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(request2), StandardCharsets.UTF_8))
                 .build();
@@ -600,7 +600,7 @@ public class MoviesApiTest {
 
         //тест метода GET /movies?year=YYYY
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies?year=2008"))
+                .uri(URI.create(baseUrl + "/movies?year=2008"))
                 .GET()
                 .build();
 
@@ -625,7 +625,7 @@ public class MoviesApiTest {
     @Test
     void getMoviesYear_filmsNotFoundForYear_returnEmptyList() throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies?year=2008"))
+                .uri(URI.create(baseUrl + "/movies?year=2008"))
                 .GET()
                 .build();
 
@@ -649,7 +649,7 @@ public class MoviesApiTest {
         Gson gson = new Gson();
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies?year=zero"))
+                .uri(URI.create(baseUrl + "/movies?year=zero"))
                 .GET()
                 .build();
 
@@ -677,7 +677,7 @@ public class MoviesApiTest {
         request.setYear(2008);
 
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(BASE + "/movies"))
+                .uri(URI.create(baseUrl + "/movies"))
                 .PUT(HttpRequest.BodyPublishers.ofString(gson.toJson(request), StandardCharsets.UTF_8))
                 .build();
 
