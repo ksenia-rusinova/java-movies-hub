@@ -1,16 +1,24 @@
 package ru.practicum.moviehub.http;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
+import ru.practicum.moviehub.api.ErrorResponse;
+import ru.practicum.moviehub.model.Movie;
+import ru.practicum.moviehub.store.MoviesStore;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
-
-import static ru.practicum.moviehub.api.ErrorResponse.getError;
-import static ru.practicum.moviehub.store.MoviesStore.getAll;
-import static ru.practicum.moviehub.store.MoviesStore.getMovieFromListByYear;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
 
 public class MoviesHandler extends BaseHttpHandler {
+    private final Gson gson = new Gson();
+    private final ErrorResponse errorResponse = new ErrorResponse();
+    private final MoviesStore moviesStore = new MoviesStore();
 
     @Override
     public void handle(HttpExchange ex) throws IOException {
@@ -20,8 +28,6 @@ public class MoviesHandler extends BaseHttpHandler {
         String[] splitStrings = requestURI.getPath().split("/");
 
         if (method.equalsIgnoreCase("GET")) {
-            Gson gson = new Gson();
-
             String query = requestURI.getQuery();
 
             if (splitStrings.length == 3) {
@@ -29,20 +35,24 @@ public class MoviesHandler extends BaseHttpHandler {
                     Integer.parseInt(splitStrings[2].trim());
                     sendGetMoviesId(ex, splitStrings);
                 } catch (NumberFormatException e) {
-                    String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
-                    sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
+                    errorResponse.setError("Ошибка валидации");
+                    errorResponse.setDetails(new String[]{"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"});
+
+                    sendJson(ex, 400, gson.toJson(errorResponse));
                 }
             } else if (query != null && !query.isEmpty()) {
                 String year = requestURI.getQuery().split("=")[1];
                 try {
                     Integer.parseInt(year.trim());
-                    sendJson(ex, 200, gson.toJson(getMovieFromListByYear(Integer.parseInt(year.trim()))));
+                    sendJson(ex, 200, gson.toJson(moviesStore.getMovieFromListByYear(Integer.parseInt(year.trim()))));
                 } catch (NumberFormatException e) {
-                    String[] details = {"некорректный параметр запроса — 'year', year = " + year};
-                    sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
+                    errorResponse.setError("Ошибка валидации");
+                    errorResponse.setDetails(new String[]{"некорректный параметр запроса — 'year', year = " + year});
+
+                    sendJson(ex, 400, gson.toJson(errorResponse));
                 }
             } else {
-                sendJson(ex, 200, gson.toJson(getAll()));
+                sendJson(ex, 200, gson.toJson(moviesStore.getAll()));
             }
         } else if (method.equalsIgnoreCase("POST")) {
             sendPostMovies(ex);
@@ -51,13 +61,89 @@ public class MoviesHandler extends BaseHttpHandler {
                 Integer.parseInt(splitStrings[2].trim());
                 sendDeleteMoviesId(ex, splitStrings);
             } catch (NumberFormatException e) {
-                Gson gson = new Gson();
+                errorResponse.setError("Ошибка валидации");
+                errorResponse.setDetails(new String[]{"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"});
 
-                String[] details = {"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"};
-                sendJson(ex, 400, gson.toJson(getError("Ошибка валидации", details)));
+                sendJson(ex, 400, gson.toJson(errorResponse));
             }
         } else {
             sendNoContent(ex, 405);
+        }
+    }
+
+    private void sendPostMovies(HttpExchange ex) throws IOException {
+        InputStream inputStream = ex.getRequestBody();
+        String reqAsString = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+
+        try {
+            Movie request = gson.fromJson(reqAsString, Movie.class);
+
+            Headers requestHeaders = ex.getRequestHeaders();
+            List<String> contentTypeValues = requestHeaders.get("Content-type");
+
+            if (contentTypeValues != null && !contentTypeValues.contains(CT_JSON)) {
+                errorResponse.setError("Ошибка валидации");
+                errorResponse.setDetails(new String[]{"некорректное значение заголовка Content-Type"});
+
+                sendJson(ex, 415, gson.toJson(errorResponse));
+                return;
+            }
+
+            if (request.getTitle() == null || request.getTitle().isEmpty()) {
+                errorResponse.setError("Ошибка валидации");
+                errorResponse.setDetails(new String[]{"название не должно быть пустым"});
+
+                sendJson(ex, 422, gson.toJson(errorResponse));
+                return;
+            }
+
+            if (request.getTitle().length() > 100) {
+                errorResponse.setError("Ошибка валидации");
+                errorResponse.setDetails(new String[]{"название не должно содержать более 100 символов"});
+
+                sendJson(ex, 422, gson.toJson(errorResponse));
+                return;
+            }
+
+            if (request.getYear() < 1888 || request.getYear() > (LocalDate.now().getYear() + 1)) {
+                errorResponse.setError("Ошибка валидации");
+                errorResponse.setDetails(new String[]{"year должен быть в диапазоне от 1888 до текущего года + 1"});
+
+                sendJson(ex, 422, gson.toJson(errorResponse));
+                return;
+            }
+
+            Integer id = moviesStore.addRecord(request.getTitle(), request.getYear());
+            sendJson(ex, 201, gson.toJson(moviesStore.getMovieFromListById(id)));
+
+        } catch (JsonSyntaxException e) {
+            errorResponse.setError("Ошибка валидации");
+            errorResponse.setDetails(new String[]{"JSON некорректен по синтаксису или его структура не подходит для Movie"});
+
+            sendJson(ex, 422, gson.toJson(errorResponse));
+        }
+    }
+
+    private void sendGetMoviesId(HttpExchange ex, String[] uri) throws IOException {
+        if (moviesStore.getMovieFromListById(Integer.parseInt(uri[2])) != null) {
+            sendJson(ex, 200, gson.toJson(moviesStore.getMovieFromListById(Integer.parseInt(uri[2]))));
+        } else {
+            errorResponse.setError("Ошибка валидации");
+            errorResponse.setDetails(new String[]{"фильм по id = " + uri[2] + " не найден"});
+
+            sendJson(ex, 404, gson.toJson(errorResponse));
+        }
+    }
+
+    private void sendDeleteMoviesId(HttpExchange ex, String[] uri) throws IOException {
+        if (moviesStore.getMovieFromListById(Integer.parseInt(uri[2])) != null) {
+            moviesStore.deleteListElementById(Integer.parseInt(uri[2]));
+            sendNoContent(ex, 204);
+        } else {
+            errorResponse.setError("Ошибка валидации");
+            errorResponse.setDetails(new String[]{"фильм по id = " + uri[2] + " не удалось удалить, тк id не найден"});
+
+            sendJson(ex, 404, gson.toJson(errorResponse));
         }
     }
 }

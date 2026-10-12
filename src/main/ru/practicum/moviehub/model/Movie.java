@@ -4,8 +4,6 @@ public class Movie {
     private Integer id;
     private String title;
     private Integer year;
-    private String error;
-    private String[] details;
 
     public Integer getId() {
         return id;
@@ -29,21 +27,5 @@ public class Movie {
 
     public void setYear(Integer year) {
         this.year = year;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
-    public String[] getDetails() {
-        return details;
-    }
-
-    public void setDetails(String[] details) {
-        this.details = details;
     }
 }

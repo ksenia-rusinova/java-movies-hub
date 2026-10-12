@@ -1,13 +1,22 @@
 package ru.practicum.moviehub.api;
 
-import ru.practicum.moviehub.model.Movie;
-
 public class ErrorResponse {
+    private String error;
+    private String[] details;
 
-    public static Movie getError(String error, String[] details) {
-        Movie movie = new Movie();
-        movie.setError(error);
-        movie.setDetails(details);
-        return movie;
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public String[] getDetails() {
+        return details;
+    }
+
+    public void setDetails(String[] details) {
+        this.details = details;
     }
 }

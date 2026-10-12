@@ -5,10 +5,10 @@ import ru.practicum.moviehub.model.Movie;
 import java.util.*;
 
 public class MoviesStore {
-    private static Integer nextId = 0;
-    private static final Map<Integer, Movie> store = new HashMap<>();
+    private Integer nextId = 0;
+    private final Map<Integer, Movie> store = new HashMap<>();
 
-    public static Integer addRecord(String title, Integer year) {
+    public Integer addRecord(String title, Integer year) {
         Movie movie = new Movie();
 
         nextId = nextId + 1;
@@ -20,19 +20,19 @@ public class MoviesStore {
         return nextId;
     }
 
-    public static List<Movie> getAll() {
+    public List<Movie> getAll() {
         return new ArrayList<>(store.values());
     }
 
-    public static Movie getMovieFromListById(Integer id) {
+    public Movie getMovieFromListById(Integer id) {
         return store.get(id);
     }
 
-    public static void deleteListElementById(Integer id) {
+    public void deleteListElementById(Integer id) {
         store.remove(id);
     }
 
-    public static List<Movie> getMovieFromListByYear(Integer queryYear) {
+    public List<Movie> getMovieFromListByYear(Integer queryYear) {
         return store.values().stream()
                 .filter(movie -> movie.getYear().equals(queryYear)).toList();
     }

@@ -2,6 +2,7 @@ package ru.practicum.moviehub.http;
 
 import com.google.gson.Gson;
 import org.junit.jupiter.api.*;
+import ru.practicum.moviehub.api.ErrorResponse;
 import ru.practicum.moviehub.model.Movie;
 
 import java.net.URI;
@@ -17,9 +18,9 @@ import static ru.practicum.moviehub.http.BaseHttpHandler.CT_JSON;
 
 public class MoviesApiTest {
 
-    private static final String BASE = "http://localhost:8080";
-    private static MoviesServer server;
-    private static HttpClient client;
+    private final String BASE = "http://localhost:8080";
+    private MoviesServer server;
+    private HttpClient client;
 
     @BeforeEach
     void beforeEach() {
@@ -227,7 +228,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("название не должно быть пустым", body.getDetails()[0]);
     }
@@ -255,7 +256,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("название не должно содержать более 100 символов", body.getDetails()[0]);
     }
@@ -283,7 +284,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("year должен быть в диапазоне от 1888 до текущего года + 1", body.getDetails()[0]);
     }
@@ -310,7 +311,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("year должен быть в диапазоне от 1888 до текущего года + 1", body.getDetails()[0]);
     }
@@ -338,7 +339,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("некорректное значение заголовка Content-Type", body.getDetails()[0]);
     }
@@ -364,7 +365,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("JSON некорректен по синтаксису или его структура не подходит для Movie", body.getDetails()[0]);
     }
@@ -436,7 +437,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("фильм по id = " + id + " не найден", body.getDetails()[0]);
     }
@@ -462,7 +463,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("некорректный id = " + id + ", id должен состоять только из цифр", body.getDetails()[0]);
     }
@@ -532,7 +533,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("фильм по id = " + id + " не удалось удалить, тк id не найден", body.getDetails()[0]);
     }
@@ -558,7 +559,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("некорректный id = " + id + ", id должен состоять только из цифр", body.getDetails()[0]);
     }
@@ -661,7 +662,7 @@ public class MoviesApiTest {
                 resp.headers().firstValue("Content-Type").orElse("");
         assertEquals(CT_JSON, contentTypeHeaderValue);
 
-        Movie body = gson.fromJson(resp.body().trim(), Movie.class);
+        ErrorResponse body = gson.fromJson(resp.body().trim(), ErrorResponse.class);
         assertEquals("Ошибка валидации", body.getError());
         assertEquals("некорректный параметр запроса — 'year', year = zero", body.getDetails()[0]);
     }
