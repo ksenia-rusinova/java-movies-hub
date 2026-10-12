@@ -1,6 +1,5 @@
 package ru.practicum.moviehub.http;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
@@ -16,8 +15,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 public class MoviesHandler extends BaseHttpHandler {
-    private final Gson gson = new Gson();
-    private final ErrorResponse errorResponse = new ErrorResponse();
     private final MoviesStore moviesStore = new MoviesStore();
 
     @Override
@@ -35,6 +32,7 @@ public class MoviesHandler extends BaseHttpHandler {
                     Integer.parseInt(splitStrings[2].trim());
                     sendGetMoviesId(ex, splitStrings);
                 } catch (NumberFormatException e) {
+                    ErrorResponse errorResponse = new ErrorResponse();
                     errorResponse.setError("Ошибка валидации");
                     errorResponse.setDetails(new String[]{"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"});
 
@@ -46,6 +44,7 @@ public class MoviesHandler extends BaseHttpHandler {
                     Integer.parseInt(year.trim());
                     sendJson(ex, 200, gson.toJson(moviesStore.getMovieFromListByYear(Integer.parseInt(year.trim()))));
                 } catch (NumberFormatException e) {
+                    ErrorResponse errorResponse = new ErrorResponse();
                     errorResponse.setError("Ошибка валидации");
                     errorResponse.setDetails(new String[]{"некорректный параметр запроса — 'year', year = " + year});
 
@@ -61,6 +60,7 @@ public class MoviesHandler extends BaseHttpHandler {
                 Integer.parseInt(splitStrings[2].trim());
                 sendDeleteMoviesId(ex, splitStrings);
             } catch (NumberFormatException e) {
+                ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.setError("Ошибка валидации");
                 errorResponse.setDetails(new String[]{"некорректный id = " + splitStrings[2].trim() + ", id должен состоять только из цифр"});
 
@@ -82,6 +82,7 @@ public class MoviesHandler extends BaseHttpHandler {
             List<String> contentTypeValues = requestHeaders.get("Content-type");
 
             if (contentTypeValues != null && !contentTypeValues.contains(CT_JSON)) {
+                ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.setError("Ошибка валидации");
                 errorResponse.setDetails(new String[]{"некорректное значение заголовка Content-Type"});
 
@@ -90,6 +91,7 @@ public class MoviesHandler extends BaseHttpHandler {
             }
 
             if (request.getTitle() == null || request.getTitle().isEmpty()) {
+                ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.setError("Ошибка валидации");
                 errorResponse.setDetails(new String[]{"название не должно быть пустым"});
 
@@ -98,6 +100,7 @@ public class MoviesHandler extends BaseHttpHandler {
             }
 
             if (request.getTitle().length() > 100) {
+                ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.setError("Ошибка валидации");
                 errorResponse.setDetails(new String[]{"название не должно содержать более 100 символов"});
 
@@ -106,6 +109,7 @@ public class MoviesHandler extends BaseHttpHandler {
             }
 
             if (request.getYear() < 1888 || request.getYear() > (LocalDate.now().getYear() + 1)) {
+                ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.setError("Ошибка валидации");
                 errorResponse.setDetails(new String[]{"year должен быть в диапазоне от 1888 до текущего года + 1"});
 
@@ -117,6 +121,7 @@ public class MoviesHandler extends BaseHttpHandler {
             sendJson(ex, 201, gson.toJson(moviesStore.getMovieFromListById(id)));
 
         } catch (JsonSyntaxException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setError("Ошибка валидации");
             errorResponse.setDetails(new String[]{"JSON некорректен по синтаксису или его структура не подходит для Movie"});
 
@@ -128,6 +133,7 @@ public class MoviesHandler extends BaseHttpHandler {
         if (moviesStore.getMovieFromListById(Integer.parseInt(uri[2])) != null) {
             sendJson(ex, 200, gson.toJson(moviesStore.getMovieFromListById(Integer.parseInt(uri[2]))));
         } else {
+            ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setError("Ошибка валидации");
             errorResponse.setDetails(new String[]{"фильм по id = " + uri[2] + " не найден"});
 
@@ -140,6 +146,7 @@ public class MoviesHandler extends BaseHttpHandler {
             moviesStore.deleteListElementById(Integer.parseInt(uri[2]));
             sendNoContent(ex, 204);
         } else {
+            ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.setError("Ошибка валидации");
             errorResponse.setDetails(new String[]{"фильм по id = " + uri[2] + " не удалось удалить, тк id не найден"});
 
